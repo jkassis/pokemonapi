@@ -1,4 +1,4 @@
-package api
+package niantic
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ func Report(t *testing.T, resp Res, apiErr Err, err error) {
 	} else if apiErr != nil {
 		t.Error(apiErr)
 	} else {
-		out, err := json.Marshal(resp)
+		out, err := json.MarshalIndent(resp, "", "  ")
 		if err != nil {
 			t.Error(fmt.Errorf("error marshaling response in test code: %v", err))
 		} else {
@@ -29,12 +29,13 @@ func TestCardGet(t *testing.T) {
 		},
 	}
 
-	// resp, apiErr, err := api.CardsSearch("hp:[90 to *] rarity:Rare", 1, 10, nil, nil)
-	resp, apiErr, err := api.CardsSearch(
-		"(types:fire or types:grass) hp:[90 to *] rarity:Rare",
-		1,
-		10,
-		[]string{"id"},
-		[]string{"name", "type", "hp", "rarity"})
+	req := CardsSearchReq{
+		Query:    "(types:fire or types:grass) hp:[90 to *] rarity:Rare",
+		Page:     1,
+		PageSize: 10,
+		OrderBy:  "id",
+		Fields:   "name,type,hp,rarity",
+	}
+	resp, apiErr, err := api.CardsSearch(&req)
 	Report(t, resp, apiErr, err)
 }

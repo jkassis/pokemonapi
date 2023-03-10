@@ -1,4 +1,4 @@
-package api
+package ezhttp
 
 import (
 	"io"
@@ -8,7 +8,7 @@ import (
 
 const DefaultUserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
 
-func httpGet(url string, ps url.Values, headers map[string]string) ([]byte, error) {
+func Get(url string, ps url.Values, headers map[string]string) ([]byte, error) {
 	// encode params
 	if len(ps) > 0 {
 		url += "?" + ps.Encode()

@@ -1,0 +1,32 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Pokemon API Tests",
+      "args": ["-test.v"],
+      "cwd": "${workspaceFolder}",
+      "mode": "test",
+      "program": "${workspaceFolder}/src/niantic",
+      "request": "launch",
+      "type": "go",
+      "env": {
+        "LOG_LEVEL": "info",
+      }
+    },
+    {
+      "name": "Pokemon CLI",
+      "args": ["-test.v"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "program": "${workspaceFolder}/src/main.go",
+      "request": "launch",
+      "type": "go",
+      "env": {
+        "LOG_LEVEL": "info",
+      }
+    }
+  ]
+}

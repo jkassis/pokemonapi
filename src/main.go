@@ -1,19 +1,30 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"regexp"
 	"strings"
 
-	"github.com/jkassis/pokemoncli/api"
+	"github.com/fatih/color"
+	"github.com/jkassis/pokemoncli/niantic"
 )
 
-func Report(resp api.Res, apiErr api.Err, err error) {
+const tracerName = "github.com/jkassis/pokemoncli"
+
+var Blue = color.New(color.FgBlue)
+var Red = color.New(color.FgRed)
+var Yellow = color.New(color.FgYellow)
+var Green = color.New(color.FgGreen)
+var White = color.New(color.FgWhite)
+var Spaces = regexp.MustCompile(`\s+`)
+
+func Report(resp niantic.Res, apiErr niantic.Err, err error) {
 	if err != nil {
 		fmt.Println(err.Error())
-		os.Exit(1)
 	} else if apiErr != nil {
 		out, err := json.MarshalIndent(apiErr, "", "  ")
 		if err != nil {
@@ -21,7 +32,6 @@ func Report(resp api.Res, apiErr api.Err, err error) {
 		} else {
 			fmt.Println(string(out))
 		}
-		os.Exit(1)
 	} else {
 		out, err := json.MarshalIndent(resp, "", "  ")
 		if err != nil {
@@ -29,39 +39,53 @@ func Report(resp api.Res, apiErr api.Err, err error) {
 		} else {
 			fmt.Println(string(out))
 		}
-		os.Exit(0)
 	}
 }
 
 func main() {
-	var limit, page int
-	flag.IntVar(&limit, "limit", 10, "limit results returned")
-	flag.IntVar(&page, "page", 1, "page of results to receive")
+	// intercept interrupts
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+	go func() {
+		for range signalChan {
+			fmt.Fprintln(os.Stderr, "\ntype 'exit' to cancel the shell")
+		}
+	}()
 
-	var query string
-	queryDefault := "(types:fire or types:grass) hp:[90 to *] rarity:Rare"
-	flag.StringVar(&query, "query", queryDefault, "query in query syntax")
-
-	var fieldsStr string
-	fieldsDefault := "name,type,hp,rarity"
-	flag.StringVar(&fieldsStr, "fields", fieldsDefault, "fields to retrieve")
-
-	flag.Parse()
-
-	fields := strings.Split(fieldsStr, ",")
-
-	api := &api.API{
+	// make the api
+	api := &niantic.API{
 		BaseURL: "https://api.pokemontcg.io/v2/",
 		Headers: map[string]string{
 			"X-Api-Key": "",
 		},
 	}
 
-	resp, apiErr, err := api.CardsSearch(
-		query,
-		page,
-		limit,
-		[]string{"id"},
-		fields)
-	Report(resp, apiErr, err)
+	// welcome!
+	Green.Fprintln(os.Stdout, "welcome to pokemon cli!")
+
+	// loop forever
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		Blue.Printf("your wish is my command (-h for help) > ")
+
+		cmd, err := reader.ReadString('\n')
+		if err != nil {
+			Red.Fprintf(os.Stderr, "err reading input: %v", err)
+			continue
+		}
+
+		// only supports 2 command right now
+		if strings.HasPrefix(cmd, "exit") {
+			os.Exit(0)
+		} else {
+			req := niantic.CardsSearchReq{}
+			req.Init()
+			err := req.Parse(cmd)
+			if err != nil {
+				continue
+			}
+			resp, apiErr, err := api.CardsSearch(&req)
+			Report(resp, apiErr, err)
+		}
+	}
 }
