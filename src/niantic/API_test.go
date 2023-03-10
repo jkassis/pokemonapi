@@ -1,6 +1,7 @@
 package niantic
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -36,6 +37,6 @@ func TestCardGet(t *testing.T) {
 		OrderBy:  "id",
 		Fields:   "name,type,hp,rarity",
 	}
-	resp, apiErr, err := api.CardsSearch(&req)
+	resp, apiErr, err := api.CardsSearch(context.Background(), &req)
 	Report(t, resp, apiErr, err)
 }
