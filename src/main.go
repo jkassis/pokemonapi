@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jkassis/pokemon/api"
+	"github.com/jkassis/pokemoncli/api"
 )
 
 func Report(resp api.Res, apiErr api.Err, err error) {

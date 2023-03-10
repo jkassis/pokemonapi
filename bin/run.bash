@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-docker run jkassis/pokemon:latest "${@:1}"
+docker run jkassis/pokemoncli:latest "${@:1}"
